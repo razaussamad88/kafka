@@ -1,0 +1,103 @@
+
+Kafka UI:
+	http://127.0.0.1:8080/
+
+Kafka Brokers: 
+	kafka1 9092
+	kafka2 9092
+
+
+
+
+How to Run Kafka
+------------------------------------------------
+1. goto 'docker-compose.yml' file directory
+2. open bash
+3. to run the containers, it will automatically runs kafka instances with KRaft (no Zookeeper)
+
+		docker-compose up -d
+	
+	docker compose — starts all services defined in the docker-compose.yml file
+	-d parameter — runs containers in detached mode (in the background).
+	
+	
+4. to shutdown the containers	
+		
+		docker-compose down
+		
+5. to check the containers
+
+		docker-compose ps
+		docker ps
+		
+
+Bonus: To see all containers (including stopped):
+		docker ps -a
+		
+		
+6. to check the logs
+		
+		docker logs kafka1
+		docker logs kafka2
+
+
+7. to build and start kafka container (utilitize dockerfile)
+
+		docker compose up --build -d
+
+
+
+::: Commands :::
+================================================================================================
+
+	Basic
+	--------------------------------------------
+
+	kafka-console-producer.sh --topic china-topic --bootstrap-server kafka1:9092
+	kafka-console-producer.sh --topic germany-topic --bootstrap-server kafka2:9092
+
+
+	kafka-console-consumer.sh --topic china-topic --from-beginning --bootstrap-server kafka1:9092
+	kafka-console-consumer.sh --topic germany-topic --from-beginning --bootstrap-server kafka2:9092
+	
+	kafka-topics.sh --bootstrap-server kafka1:9092 --list
+	
+	kafka-topics.sh --bootstrap-server kafka1:9092 --describe --topic germany-topic
+	
+	
+	
+		
+	Test Network Connectivity
+	--------------------------------------------
+		
+		# Start all services
+		docker-compose up -d
+
+		# Test DNS resolution from Kafka-UI container
+		docker exec kafka-ui nslookup kafka1
+		docker exec kafka-ui nslookup kafka2
+
+		# Test connectivity
+		docker exec kafka-ui ping kafka1
+		docker exec kafka-ui ping kafka2
+
+		# Check if Kafka brokers are accessible
+		docker exec kafka-ui nc -zv kafka1 9092
+		docker exec kafka-ui nc -zv kafka2 9092
+		
+
+		
+	Check Network and Restart
+	--------------------------------------------
+		# Stop everything
+		docker-compose down
+
+		# Check if network exists
+		docker network ls | grep kafka-net
+
+		# Remove existing network if it exists
+		docker network rm kafka-net
+
+		# Start fresh
+		docker-compose up -d
+		

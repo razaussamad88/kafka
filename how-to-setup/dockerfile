@@ -1,0 +1,4 @@
+FROM apache/kafka:4.1.0
+
+# Add /opt/kafka/bin to PATH environment variable globally
+ENV PATH="/opt/kafka/bin:${PATH}"

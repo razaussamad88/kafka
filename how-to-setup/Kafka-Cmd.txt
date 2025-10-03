@@ -1,0 +1,84 @@
+
+How to Run Kafka
+------------------------------------------------
+
+1. start docker desktop
+2. search image 'apache-kafka'
+3. run the image
+
+
+Now Kafka is available to your machine
+
+open windows bash and run below command to check the Kafka Port and Image
+	docker ps
+	
+================================================================================================
+
+
+
+
+================================================================================================
+
+On "Docker Desktop", goto "Conatiners" (left menu) 
+	-> open Kafka running Image (from list) 
+	-> click on "Exec" tab 
+	-> click 'open in external terminal'
+	
+	
+In the external cmd terminal run below cmd. It list down all the available Kafka's commands
+	ls /opt/kafka/bin/
+
+or can also run this to add the path
+	export PATH=$PATH:/opt/kafka/bin
+
+
+
+::: Commands :::
+================================================================================================
+
+
+	Create a Kafka topic
+	--------------------------------------------
+		docker exec kafka \
+		  kafka-topics.sh --create --topic galaxy-ventures-topic --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+
+
+	List topics
+	--------------------------------------------
+		docker exec kafka \
+		  kafka-topics.sh --list --bootstrap-server localhost:9092
+
+
+	Describe a topic (get details)
+	--------------------------------------------
+		docker exec kafka \
+		  kafka-topics.sh --describe --topic galaxy-ventures-topic --bootstrap-server localhost:9092
+
+
+
+	Produce messages
+	--------------------------------------------
+		docker exec -i kafka \
+		  kafka-console-producer.sh --topic galaxy-ventures-topic --bootstrap-server localhost:9092
+	
+	Type messages here and hit Enter. To exit, press Ctrl+C.
+
+
+
+	Consume messages
+	--------------------------------------------
+		docker exec -i kafka \
+		  kafka-console-consumer.sh --topic galaxy-ventures-topic --from-beginning --bootstrap-server localhost:9092
+	
+	Terminal will gradually shows all messages on the topic
+
+
+
+	Delete a topic
+	--------------------------------------------		  
+		docker exec kafka \
+		  kafka-topics.sh --delete --topic galaxy-ventures-topic --bootstrap-server localhost:9092
+
+
+
+	kafka-topics.sh --describe --topic <name>

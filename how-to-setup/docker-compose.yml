@@ -1,0 +1,96 @@
+services:
+  kafka1:
+    build: .
+    #image: apache/kafka:3.5.1  # Replace with Kafka 4+ image when available
+    image: apache/kafka:4.1.0 # Replaced with Kafka 4+ image
+    container_name: kafka1
+    hostname: kafka1 # Explicit hostname
+    ports:
+      - "9092:9092" # Broker listener
+      - "9093:9093" # Controller listener
+    environment:
+      KAFKA_PROCESS_ROLES: broker,controller # enables KRaft mode (no ZooKeeper)
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:9092
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka1:9093,2@kafka2:9093
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
+      # Cluster configuration
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 2
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+
+      # Security
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+
+    networks:
+      - kafka-net
+
+    healthcheck:
+      test: [ "CMD", "kafka-topics.sh", "--bootstrap-server", "localhost:9092", "--list" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  kafka2:
+    build: .
+    #image: apache/kafka:3.5.1  # Update to Kafka 4+ when available
+    image: apache/kafka:4.1.0 # Replaced with Kafka 4+ image
+    container_name: kafka2
+    hostname: kafka2 # Explicit hostname
+    ports:
+      - "9094:9092"
+      - "9095:9093"
+    environment:
+      KAFKA_PROCESS_ROLES: broker,controller # enables KRaft mode (no ZooKeeper)
+      KAFKA_NODE_ID: 2
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka2:9092
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka1:9093,2@kafka2:9093
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
+      # Cluster configuration
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 2
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 2
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+
+      # Security
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+
+    networks:
+      - kafka-net
+
+    healthcheck:
+      test: [ "CMD", "kafka-topics.sh", "--bootstrap-server", "localhost:9092", "--list" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    hostname: kafka-ui # Explicit hostname
+    ports:
+      - "8080:8080" # Web UI accessible on port 8080
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local-kraft-cluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka1:9092,kafka2:9092
+      KAFKA_CLUSTERS_0_METRICS_PORT: 9997 # Optional: for JMX metrics
+    networks:
+      kafka-net:
+    depends_on:
+      kafka1:
+        condition: service_healthy
+      kafka2:
+        condition: service_healthy
+
+networks:
+  kafka-net:
+    driver: bridge
